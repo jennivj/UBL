@@ -9,6 +9,7 @@ use Sabre\Xml\XmlSerializable;
 
 class PaymentMeans implements XmlSerializable {
 	private $paymentCode;
+	private $paymentMeansCodeAttr;
 	private $paymentDueDate;
 	private $paymentAccount;
 
@@ -23,9 +24,13 @@ class PaymentMeans implements XmlSerializable {
 	 * @param mixed $paymentCode
 	 * @return int
 	 */
-	public function setPaymentMeansCode($paymentCode) {
+	public function setPaymentMeansCode($paymentCode,$paymentCodeAttr=false) {
 		$this->paymentCode = $paymentCode;
+		$this->paymentMeansCodeAttr = $paymentCodeAttr;
 		return $this;
+
+
+
 	}
 
 	/**
@@ -54,8 +59,25 @@ class PaymentMeans implements XmlSerializable {
 //setPayeeFinancialAccount
 
 	function xmlSerialize(Writer $writer) {
+		 $attrArray= [];
+       if(isset($this->paymentMeansCodeAttr['listID']) &&  $this->paymentMeansCodeAttr['listID'] != ""){
+        $attrArray['listID']= $this->paymentMeansCodeAttr['listID'];
+        }
+      if(isset($this->paymentMeansCodeAttr['listURI'])){           
+                $attrArray['listURI']= $this->paymentMeansCodeAttr['listURI'];
+        }
+	  if(isset($this->paymentMeansCodeAttr['listName'])){           
+                $attrArray['listName']= $this->paymentMeansCodeAttr['listName'];
+        }
+
 		$writer->write([
-			Schema::CBC.'PaymentMeansCode' => $this->paymentCode,
+			 [
+                    'name' => Schema::CBC . 'PaymentMeansCode',
+                    'value' => $this->paymentCode,
+                    'attributes' => $attrArray,
+
+                ],
+		 
 			Schema::CBC.'PaymentDueDate' =>   $this->paymentDueDate,         
             Schema::CAC.'PayeeFinancialAccount' => $this->paymentAccount, 
 

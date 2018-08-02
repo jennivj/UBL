@@ -6,11 +6,13 @@ namespace CleverIt\UBL\Invoice;
 use Sabre\Xml\Writer;
 use Sabre\Xml\XmlSerializable;
 
-class InvoiceLine implements XmlSerializable {
+class CreditLine implements XmlSerializable {
     private $id;
-    private $invoicedQuantity;
+    private $creditedQuantity;
+    private $crdtLineQuantityAttr;
     private $lineExtensionAmount;
     private $unitCode ;
+    private $unitCodeListID;
     /**
      * @var TaxTotal
      */
@@ -43,16 +45,18 @@ class InvoiceLine implements XmlSerializable {
     /**
      * @return mixed
      */
-    public function getInvoicedQuantity() {
-        return $this->invoicedQuantity;
+    public function getCreditedQuantity() {
+        return $this->creditedQuantity;
     }
 
     /**
      * @param mixed $invoicedQuantity
      * @return InvoiceLine
      */
-    public function setInvoicedQuantity($invoicedQuantity) {
-        $this->invoicedQuantity = $invoicedQuantity;
+    public function setCreditedQuantity($creditedQuantity,$crdtLineQuantityAttr=false) {
+        $this->creditedQuantity = $creditedQuantity;
+        $this->crdtLineQuantityAttr = $crdtLineQuantityAttr;
+
         return $this;
     }
 
@@ -143,15 +147,23 @@ class InvoiceLine implements XmlSerializable {
      * @return void
      */
     function xmlSerialize(Writer $writer) {
+ 
+        $attrArray= [];
+        if(isset($this->crdtLineQuantityAttr['unitCode'])){
+
+        $attrArray['unitCode']= $this->crdtLineQuantityAttr['unitCode'];
+        }
+        if(isset($this->crdtLineQuantityAttr['unitCodeListID'])){           
+                $attrArray['unitCodeListID']= $this->crdtLineQuantityAttr['unitCodeListID'];
+        }
+
         $writer->write([
             Schema::CBC . 'ID' => $this->id,
             [
-                'name' => Schema::CBC . 'InvoicedQuantity',
-                'value' => $this->invoicedQuantity,
-              /*  'attributes' => [
-                    'unitCode' => $this->unitCode
-                ]
-                */
+                'name' => Schema::CBC . 'CreditedQuantity',
+                'value' => $this->creditedQuantity,
+               'attributes' =>    $attrArray,
+               
             ],
             [
                 'name' => Schema::CBC . 'LineExtensionAmount',
@@ -165,16 +177,12 @@ class InvoiceLine implements XmlSerializable {
         
         ]);
 
-        echo '<pre>';
-        print_R( $this->price  );
-
-    if ($this->price !== null) {
+        if ($this->price !== null) {
             $writer->write(
                 [
                     Schema::CAC . 'Price' => $this->price
                 ]
             );
         }
-        
     }
 }

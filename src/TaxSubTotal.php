@@ -66,6 +66,7 @@ class TaxSubTotal implements XmlSerializable {
 
 
     public function validate() {
+        /*
         if ($this->taxableAmount === null) {
             throw new \InvalidArgumentException('Missing taxsubtotal taxableAmount');
         }
@@ -77,6 +78,7 @@ class TaxSubTotal implements XmlSerializable {
         if ($this->taxCategory === null) {
             throw new \InvalidArgumentException('Missing taxsubtotal taxcategory');
         }
+        */
     }
 
     /**
@@ -86,13 +88,13 @@ class TaxSubTotal implements XmlSerializable {
      */
     function xmlSerialize(Writer $writer) {
         $this->validate();
-
+ 
         $writer->write([
                 [
                     'name' => Schema::CBC . 'TaxableAmount',
                     'value' => number_format($this->taxableAmount, 2),
                     'attributes' => [
-                        'currencyID' => Invoice::$currencyID 
+                        'currencyID' => currencyID::$currencyID
                     ]
 
                 ],
@@ -100,7 +102,7 @@ class TaxSubTotal implements XmlSerializable {
                     'name' => Schema::CBC . 'TaxAmount',
                     'value' => number_format($this->taxAmount, 2),
                     'attributes' => [
-                        'currencyID' => Invoice::$currencyID 
+                        'currencyID' => currencyID::$currencyID
                     ]
 
                 ],

@@ -10,7 +10,9 @@ use Sabre\Xml\XmlSerializable;
 class LegalMonetaryTotal implements XmlSerializable {
     private $lineExtensionAmount;
     private $taxExclusiveAmount;
+    private $taxInclusiveAmount;
     private $allowanceTotalAmount = 0;
+    private $prePaidAmount;
     private $payableAmount;
 
     /**
@@ -45,6 +47,15 @@ class LegalMonetaryTotal implements XmlSerializable {
         return $this;
     }
 
+
+ /**
+     * @param mixed $taxInclusiveAmount
+     * @return TaxInclusiveAmount
+     */
+    public function setTaxInclusiveAmount($taxInclusiveAmount) {
+        $this->taxInclusiveAmount = $taxInclusiveAmount;
+        return $this;
+    }
     /**
      * @return mixed
      */
@@ -76,6 +87,14 @@ class LegalMonetaryTotal implements XmlSerializable {
         $this->payableAmount = $payableAmount;
         return $this;
     }
+ /**
+     * @param mixed $payableAmount
+     * @return LegalMonetaryTotal
+     */
+    public function setPrePaidAmount($prePaidAmount) {
+        $this->prePaidAmount = $prePaidAmount;
+        return $this;
+    }
 
 
     /**
@@ -91,7 +110,7 @@ class LegalMonetaryTotal implements XmlSerializable {
                 'name' => Schema::CBC . 'LineExtensionAmount',
                 'value' => number_format($this->lineExtensionAmount, 2),
                 'attributes' => [
-                    'currencyID' => Invoice::$currencyID
+                    'currencyID' => currencyID::$currencyID
                 ]
 
             ],
@@ -99,7 +118,15 @@ class LegalMonetaryTotal implements XmlSerializable {
                 'name' => Schema::CBC . 'TaxExclusiveAmount',
                 'value' => number_format($this->taxExclusiveAmount, 2),
                 'attributes' => [
-                    'currencyID' => Invoice::$currencyID
+                    'currencyID' => currencyID::$currencyID
+                ]
+
+            ], 
+              [
+                'name' => Schema::CBC . 'TaxInclusiveAmount',
+                'value' => number_format($this->taxInclusiveAmount, 2),
+                'attributes' => [
+                    'currencyID' => currencyID::$currencyID
                 ]
 
             ],
@@ -107,7 +134,15 @@ class LegalMonetaryTotal implements XmlSerializable {
                 'name' => Schema::CBC . 'AllowanceTotalAmount',
                 'value' => number_format($this->allowanceTotalAmount, 2),
                 'attributes' => [
-                    'currencyID' => Invoice::$currencyID
+                    'currencyID' =>currencyID::$currencyID
+                ]
+
+            ],
+             [
+                'name' => Schema::CBC . 'PrepaidAmount',
+                'value' => number_format($this->prePaidAmount, 2),
+                'attributes' => [
+                    'currencyID' =>currencyID::$currencyID
                 ]
 
             ],
@@ -115,7 +150,7 @@ class LegalMonetaryTotal implements XmlSerializable {
                 'name' => Schema::CBC . 'PayableAmount',
                 'value' => number_format($this->payableAmount,2),
                 'attributes' => [
-                    'currencyID' => Invoice::$currencyID
+                    'currencyID' => currencyID::$currencyID
                 ]
 
             ],

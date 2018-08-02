@@ -11,6 +11,7 @@ class Item implements XmlSerializable {
     private $description;
     private $name;
     private $sellersItemIdentification;
+    private $taxCategory;
 
     /**
      * @return mixed
@@ -61,6 +62,15 @@ class Item implements XmlSerializable {
     }
 
 
+    /**
+     * @param TaxCategory $taxCategory
+     * @return TaxSubTotal
+     */
+    public function setTaxCategory($taxCategory) {
+        $this->taxCategory = $taxCategory;
+        return $this;
+    }
+
 
     /**
      * The xmlSerialize method is called during xml writing.
@@ -69,12 +79,36 @@ class Item implements XmlSerializable {
      * @return void
      */
     function xmlSerialize(Writer $writer) {
-        $writer->write([
-           Schema::CBC.'Description' => $this->description,
-           Schema::CBC.'Name' => $this->name,
-           Schema::CAC.'SellersItemIdentification' => [
+         if(isset($this->name) &&  $this->name !=""){
+              $writer->write([           
+           Schema::CBC.'Name' => $this->name,        
+        
+        ]);
+         }
+           if(isset($this->description) &&  $this->description !=""){
+              $writer->write([           
+             Schema::CBC.'Description' => $this->description,        
+        
+        ]);
+         }        
+
+   
+
+           if(isset($this->sellersItemIdentification)){
+             $writer->write([            
+               Schema::CAC.'SellersItemIdentification' => [
                Schema::CBC.'ID' => $this->sellersItemIdentification
            ],
+       
+           
+        
         ]);
+         }
+          if(isset($this->taxCategory)){
+              $writer->write([           
+             Schema::CAC.'ClassifiedTaxCategory' =>$this->taxCategory,
+        
+        ]);
+         }
     }
 }

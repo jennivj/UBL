@@ -1,6 +1,6 @@
 <?php
 require_once "../vendor/autoload.php";
-$invoice = new \CleverIt\UBL\Invoice\Invoice();
+//$invoice = new \CleverIt\UBL\Invoice\Invoice();
 
  
 
@@ -11,9 +11,7 @@ $service->namespaceMap = [
     'urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2' => 'cac'
 ];
 
-$entry = new \CleverIt\UBL\Invoice\Invoice();
-echo "<pre>";
-print_R($entry); 
+   $entry = new \CleverIt\UBL\Invoice\Invoice(); 
    $entry->UBLVersionID =  $entry->UBLVersionID;
    $entry->CustomizationID =  'u';
    $entry->ID =  $entry->setId(2018112038);
@@ -36,15 +34,13 @@ $supplierAddress = (new \CleverIt\UBL\Invoice\Address())
     ->setCountry((new \CleverIt\UBL\Invoice\Country())->setIdentificationCode("NL"));
 
 $accountingSupplierParty->setPostalAddress($supplierAddress);
-$accountingSupplierParty->setTaxScheme("jenn");
+$accountingSupplierParty->setTaxScheme(( new \CleverIt\UBL\Invoice\TaxScheme() )
+                                       ->setId('kkkk')
+                                       ->setSchemeId('jjjjj'));
 $accountingSupplierParty->setCompanyId('jenn');
 $accountingSupplierParty->setLegalEntity('jenn');
-//
-
-//$accountingSupplierParty->setPhysicalLocation($supplierAddress); 
-
 $entry->setAccountingSupplierParty($accountingSupplierParty);
-
+$entry->setAccountingCustomerParty($accountingSupplierParty);
 $paymentMeans = (new \CleverIt\UBL\Invoice\PaymentMeans())
     ->setPaymentMeansCode('30')
     ->setPaymentDueDate('31-03-2018') 
@@ -63,13 +59,21 @@ $taxtotal = (new \CleverIt\UBL\Invoice\TaxTotal())
             ->setId("H")
             ->setName("NL, Hoog Tarief")
             ->setPercent(21.00)))
-        ->addTaxSubTotal((new \CleverIt\UBL\Invoice\TaxSubTotal())
+    ->addTaxSubTotal((new \CleverIt\UBL\Invoice\TaxSubTotal())
             ->setTaxAmount(9)
             ->setTaxableAmount(100)
             ->setTaxCategory((new \CleverIt\UBL\Invoice\TaxCategory())
             ->setId("X")
             ->setName("NL, Laag Tarief")
-            ->setPercent(9.00)) );
+            ->setPercent(9.00) 
+            ->setTaxScheme(( new \CleverIt\UBL\Invoice\TaxScheme() )
+                                       ->setId('kkkk')
+                                       ->setSchemeId('jjjjj'))
+        ) );
+          /*  ->setTaxScheme(( new \CleverIt\UBL\Invoice\TaxScheme() )
+                                       ->setId('kkkk')
+                                       ->setSchemeId('jjjjj')));
+     */
 
 
     $entry->TaxCurrencyCode('ERND') ;
@@ -85,47 +89,17 @@ $invoiceLine = (new \CleverIt\UBL\Invoice\InvoiceLine())
 
 $entry->setInvoiceLines([$invoiceLine]);
 
-    $entry->setLegalMonetaryTotal((new \CleverIt\UBL\Invoice\LegalMonetaryTotal())
+$entry->setLegalMonetaryTotal((new \CleverIt\UBL\Invoice\LegalMonetaryTotal())
           ->setLineExtensionAmount(100)
           ->setTaxExclusiveAmount(100)
           ->setPayableAmount(-1000)
           ->setAllowanceTotalAmount(50));
-//$entry->setAccountingCustomerParty($accountingSupplierParty);
-    /*
--<cac:PaymentMeans>
-
-<cbc:PaymentMeansCode>20</cbc:PaymentMeansCode>
-
-<cbc:PaymentDueDate>2018-07-03</cbc:PaymentDueDate>
-
-
--<cac:PayeeFinancialAccount>
-
-<cbc:ID schemeID="IBAN">NL89INGB0007168173</cbc:ID>
-
-</cac:PayeeFinancialAccount>
-
-</cac:PaymentMeans>
-*/
-
-//$SupplierPartyParam = [];
- //   $entry->setAccountingSupplierParty($SupplierPartyParam);
-  // $entry->InvoicePeriodSubNode_StartDate =  '1' ; 
-  // $entry->InvoicePeriodSubNode_EndDate =  '6';
-               /* $cbc . 'UBLVersionID' => '',    */
-/*$entry->title = 'Invoice True CC nn';
-$entry->link = 'http://example.org/2003/12/13/atom03';
  
-$entry->id = 'urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a';
-$entry->updated = '2003-12-13';
-$entry->summary = 'Some Test 22';
-*/
-
 echo "=============";
 print_R($entry);
 
  //$invoice->xmlSerialize();
- file_put_contents("ubl_creditenote.xml",  $service->write('Invoice' , $entry) );
+file_put_contents("ubl_invoice.xml",  $service->write('Invoice' , $entry) );
 
 /*
 
@@ -133,7 +107,7 @@ class InvoiceEntry implements Sabre\Xml\XmlSerializable {
 
     public $title;
     public $link;
-    public $id;
+    public $id;vendor
     public $updated;
     public $summary;
 

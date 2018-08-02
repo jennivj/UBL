@@ -9,6 +9,7 @@ use Sabre\Xml\XmlSerializable;
 
 class Country implements  XmlSerializable {
     private $identificationCode;
+    private $identificationCodeAttr;
 
     /**
      * @return mixed
@@ -27,6 +28,14 @@ class Country implements  XmlSerializable {
     }
 
 
+ /**
+     * @param mixed $identificationCodeAttr
+     * @return identificationCodeAttr
+     */
+    public function setIdentificationCodeAttr($identificationCodeAttr) {
+        $this->identificationCodeAttr = $identificationCodeAttr;
+        return $this;
+    }
 
     /**
      * The xmlSerialize method is called during xml writing.
@@ -36,7 +45,14 @@ class Country implements  XmlSerializable {
      */
     function xmlSerialize(Writer $writer) {
         $writer->write([
-            Schema::CBC.'IdentificationCode' => $this->identificationCode,
+   
+                [
+                'name' => Schema::CBC . 'IdentificationCode',
+                'value' =>  $this->identificationCode,
+                'attributes' => [
+                    'listID' => $this->identificationCodeAttr,
+                ]
+            ],
         ]);
     }
 

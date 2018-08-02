@@ -10,7 +10,7 @@ use Sabre\Xml\XmlSerializable;
 class Price implements XmlSerializable {
     private $priceAmount;
     private $baseQuantity;
-    private $unitCode = 'MON';
+    private $unitCode   ;
 
     /**
      * @return mixed
@@ -69,20 +69,25 @@ class Price implements XmlSerializable {
      * @return void
      */
     function xmlSerialize(Writer $writer) {
+         $attrArray= [];
+        if(isset($this->unitCode)){
+
+        $attrArray['unitCode']=$this->unitCode;
+        }
         $writer->write([
             [
                 'name' => Schema::CBC.'PriceAmount',
                 'value' => $this->priceAmount,
                 'attributes' => [
-                    'currencyID' => Generator::$currencyID
+                    'currencyID' => currencyID::$currencyID
                 ]
             ],
             [
                 'name' => Schema::CBC.'BaseQuantity',
                 'value' => $this->baseQuantity,
-                'attributes' => [
-                    'unitCode' => $this->unitCode
-                ]
+                'attributes' =>   $attrArray,
+                
+                 
             ]
 
         ]);

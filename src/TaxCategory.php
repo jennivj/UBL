@@ -9,6 +9,7 @@ use Sabre\Xml\XmlSerializable;
 
 class TaxCategory implements XmlSerializable {
     private $id;
+    private $idAttr;
     private $name;
     private $percent;
     private $taxScheme;
@@ -24,8 +25,9 @@ class TaxCategory implements XmlSerializable {
      * @param mixed $id
      * @return TaxCategory
      */
-    public function setId($id) {
+    public function setId($id,$idAttr=false) {
         $this->id = $id;
+       $this->idAttr = $idAttr; 
         return $this;
     }
 
@@ -101,12 +103,32 @@ class TaxCategory implements XmlSerializable {
      */
     function xmlSerialize(Writer $writer) {
         $this->validate();
+          $attrArray= [];
+        if(isset($this->idAttr['schemeID'])){
 
+        $attrArray['schemeID']= $this->idAttr['schemeID'];
+        }
+      if(isset($this->idAttr['schemeAgencyID'])){           
+                $attrArray['schemeAgencyID']= $this->idAttr['schemeAgencyID'];
+        }
         $writer->write([
-            Schema::CBC.'ID' => $this->id,
-            Schema::CBC.'Name' => $this->name,
-            Schema::CBC.'Percent' => $this->percent,
+            //Schema::CBC.'ID' => $this->id,
+              [
+                    'name' => Schema::CBC . 'ID',
+                    'value' => $this->id,
+                    'attributes' => $attrArray,
+
+                ],
+           
+           
         ]);
+
+   if($this->name != null){
+            $writer->write([ Schema::CBC.'Name' => $this->name]);
+        }
+ if($this->percent != null){
+            $writer->write([  Schema::CBC.'Percent' => $this->percent,]);
+        }
 
         if($this->taxScheme != null){
             $writer->write([Schema::CAC.'TaxScheme' => $this->taxScheme]);

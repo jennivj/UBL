@@ -21,6 +21,7 @@ class Invoice  implements XmlSerializable{
     public $InvoicePeriodSubNode_StartDate;
     public $InvoicePeriodSubNode_EndDate;
     public  $accountingSupplierParty ;
+    public $accountingCustomerParty;
     public $taxTotal;
     public $legalMonetaryTotal;
 
@@ -77,6 +78,16 @@ public function TaxCurrencyCode($currencyCode){
         $this->accountingSupplierParty = $accountingSupplierParty;
         return $this;
     }
+
+     /**
+     * @param Party $accountingSupplierParty
+     * @return Invoice
+     */
+    public function setAccountingCustomerParty($accountingCustomerParty) {
+        $this->accountingCustomerParty = $accountingCustomerParty;
+        return $this;
+    }
+
     /**
      * @return InvoiceLine[]
      */
@@ -125,18 +136,25 @@ public function taxTotal(){
              $cbc . 'IssueDate' =>$this->IssueDate,
               [
                'name' =>   $cbc  . 'DocumentCurrencyCode', 'value' => $this->DocumentCurrencyCode,
-               'attributes' => $this->CurrencyCodeAttr,
+             //  ['listID'=>  $this->currencyAttrListID ,  'listAgencyID' => $this->currencyAttrAgencyID ];
+               'attributes' => ['listID'=> $this->CurrencyCodeAttr['listID'] , 'listAgencyID'=> $this->CurrencyCodeAttr['listAgencyID']],
                ],
          
              $cac . 'InvoicePeriod' => [  $cbc . 'StartDate' =>  $this->InvoicePeriodSubNode_StartDate,
                                           $cbc . 'EndDate'   =>  $this->InvoicePeriodSubNode_EndDate ],
              $cac . 'AccountingSupplierParty' => [$cac . "Party" =>  $this->accountingSupplierParty],
+
+             $cac . 'AccountingCustomerParty' => [$cac . "Party" =>  $this->accountingCustomerParty],
+
+
+ 
              $cac.'PaymentMeans'   => $this->paymentMeans  ,  
              $cac . 'TaxTotal' => $this->taxTotal  ,   
           
             
              $cac . 'LegalMonetaryTotal' => $this->legalMonetaryTotal  , 
-               $cac . 'InvoiceLine' => $this->invoiceLines  ,    
+            //   $cac . 'InvoiceLine' => $this->invoiceLines  ,  
+
                
                        //  $cac . 'AccountingSupplierParty' => [$cac . "Party" =>  $this->accountingSupplierParty],                      
                /* $cbc . 'UBLVersionID' => '',   
@@ -156,6 +174,12 @@ public function taxTotal(){
         ];
 
         $writer->write(  $invoice);
+
+         foreach ($this->invoiceLines as $invoiceLine) {
+            $writer->write([
+                    $cac . 'InvoiceLine' => $invoiceLine
+            ]);
+        }
       /*    */
 
 
@@ -172,15 +196,3 @@ public function taxTotal(){
     }
 
 }
-
- 
-
-
-
-
-echo "sdfsdfsdf";
-
-
-
-
- 

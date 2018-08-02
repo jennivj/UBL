@@ -1,13 +1,25 @@
 <?php
 
-class BaseconeInvoice
+class creditNoteClass
 {
     public $customizationID;
+    public $ProfileID;
     public $ID;
     public $issueDate;
+    public $note;
     public $currencyAttrListID;
     public $currencyAttrAgencyID;
     public $docCurrencyCode;
+#----------------------#
+    public $InvoiceDocRefID;
+    public $AdditionalDocRefID = array();
+    public $AdditionalDoctType = array();
+    public $AdditionalDocAttachment = array();
+    public $AdditionalDocMimeCode = array();
+    public $AdditionalDocBinaryObject = array();
+    public $AdditionalDoc = array();
+
+#----------------------#
     public $invoiceStartDate;
     public $invoiceEndDate;
     public $supplierPartyName;
@@ -17,18 +29,33 @@ class BaseconeInvoice
     public $supplierPartyZip;
     public $supplierPartyCountryCode;
     public $supplierPartyCountryCodeAttr;
-    public $contactEmail;
-    public $contactPhone;
+
     public $taxSchemeID;
     public $taxSchemeAttrID;
     public $companyID;
     public $companySchemeID;
     public $legalEntity;
+
+    /* customer Node*/
+    public $customerPartyName;
+    public $customerPartyCityName;
+    public $customerPartyStreetName;
+    public $customerPartyBuildingNumber;
+    public $customerPartyZip;
+    public $customerPartyCountryCode;
+    public $customerPartyCountryCodeAttr;
+    public $customertaxSchemeID;
+    public $customertaxSchemeAttrID;
+    public $customercompanyID;
+    public $customercompanySchemeID;
+#----------------------#
+
     /* paymentMeans Node */
     public $paymentMeansCode;
     public $paymentMeansDueDate;
     public $paymentMeansFASchemaId;
     public $paymentMeansFASchemaVal;
+    public $paymentMeansCodeAttr;
     /* Tax Node */
     public $taxCurrencyCode;
     public $taxAmount;
@@ -41,15 +68,16 @@ class BaseconeInvoice
     public $taxTCatSchemeID = array();
     public $taxTCatSchemeIDAttr = array();
     public $taxTCatSchemeVal = array();
-    /* Invoice Inline  Node */
+    /* Invoice crdtLine  Node */
 
-    public $inLineId = array();
-    public $inLineQuantity = array();
-    public $inLineExtAmount = array();
-    public $inLineItemName = array();
-    public $inLineItemDesc = array();
-    public $inLineSellerId = array();
-    /*  Invoice Inline  >item */
+    public $crdtLineId = array();
+    public $crdtLineQuantity = array();
+    public $crdtLineQuantityAttr = array();
+    public $crdtLineExtAmount = array();
+    public $crdtLineItemName = array();
+    public $crdtLineItemDesc = array();
+    public $crdtLineSellerId = array();
+    /*  Invoice crdtLine  >item */
     public $itemTaxCatID;
     public $itemTaxCatIdAttr;
     public $itemTaxCatName;
@@ -59,38 +87,66 @@ class BaseconeInvoice
     /***/
     public $LegalMonetaryExtAmount;
     public $LegalMonetaryTaxExcAmount;
-    public $LegalMonetaryTaxIncAmount;
     public $LegalMonetaryPayableAmt;
     public $LegalMonetaryAllowanceTotalAmt;
 
-    public $priceAmount= array();
-    public $baseQuantity= array();
-    public $unitCode= array();
+    public $priceAmount;
+    public $baseQuantity;
+    public $unitCode;
+
 
     public function generateXml()
     {
 
+
         $service = new Sabre\Xml\Service();
         $service->namespaceMap = [
-            'urn:oasis:names:specification:ubl:schema:xsd:Invoice-2' => '',
+            'urn:oasis:names:specification:ubl:schema:xsd:CreditNote-2' => '',
             'urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2' => 'cbc',
             'urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2' => 'cac'
         ];
 
-        $entry = $this->invoiceGeneration();
-        file_put_contents("ubl_invoice.xml", $service->write('Invoice', $entry));
+        $entry = $this->creditNoteGeneration();
+        file_put_contents("ubl_creditnote.xml", $service->write('Invoice', $entry));
 //return $this;
     }
 
-    public function invoiceGeneration()
+    public function creditNoteGeneration()
     {
-        $entry = new \CleverIt\UBL\Invoice\Invoice();
+
+
+        $entry = new \CleverIt\UBL\Invoice\CreditNote();
         $entry->UBLVersionID = $entry->UBLVersionID;
         $entry->CustomizationID = $this->customizationID;
+        $entry->ProfileID = $this->ProfileID;
         $entry->ID = $entry->setId($this->ID);
         $entry->IssueDate = $this->issueDate;
-        $currencyAttrArray = ['listID' => $this->currencyAttrListID, 'listAgencyID' => $this->currencyAttrAgencyID];
+        $entry->note = $this->note;
+        $attrArrayCur = [];
+        if (isset($this->currencyAttrListID)) {
+            $attrArrayCur['listID'] = $this->currencyAttrListID;
+        }
+        if (isset($this->currencyAttrAgencyID)) {
+            $attrArrayCur['listAgencyID'] = $this->currencyAttrAgencyID;
+        }
+        $currencyAttrArray = $attrArrayCur;
         $entry->DocumentCurrencyCode($this->docCurrencyCode, $currencyAttrArray);
+        $entry->setInviceDocRefID($this->InvoiceDocRefID);
+        for ($k = 0; $k < count($this->AdditionalDocRefID); $k++) {
+            $arryAdditionRef[] = (new \CleverIt\UBL\Invoice\BillingReference())
+                ->setAdditionalDocRefID($this->AdditionalDocRefID[$k])
+                ->setAdditionalDoctType($this->AdditionalDoctType[$k])
+                ->setAdditionalDocAttachment($this->AdditionalDocAttachment[$k])
+                ->setAdditionalDocBinaryObject($this->AdditionalDocBinaryObject[$k])
+                ->setAdditionalDocMimeCode($this->AdditionalDocMimeCode[$k]);
+
+            /*[ 'ID' => $this->AdditionalDocRefID[$k]  ,
+                                  'DocumentType' =>  $AdditionalDoctType[$k] ];
+               */
+        }
+        print_r($arryAdditionRef);
+        $entry->setAdditionalInvoiceDocRef($arryAdditionRef);
+
         $entry->InvoicePeriod($this->invoiceStartDate, $this->invoiceEndDate); // start and end date
 
         /* Supplier Node */
@@ -113,7 +169,7 @@ class BaseconeInvoice
         $accountingSupplierParty->setCompanySchemeID($this->companySchemeID);
 
         $accountingSupplierParty->setLegalEntity($this->legalEntity);
-        $accountingSupplierParty->setContact((new \CleverIt\UBL\Invoice\Contact())->setElectronicMail($this->contactEmail )->setTelephone( $this->contactPhone));
+        $accountingSupplierParty->setContact((new \CleverIt\UBL\Invoice\Contact())->setElectronicMail("info@cleverit.nl")->setTelephone("31402939003"));
         $entry->setAccountingSupplierParty($accountingSupplierParty);
 
 
@@ -133,21 +189,20 @@ class BaseconeInvoice
         $accountingCustomerParty->setTaxScheme((new \CleverIt\UBL\Invoice\TaxScheme())
             ->setId($this->customertaxSchemeID)
             ->setSchemeId($this->customertaxSchemeAttrID));
-        $accountingCustomerParty->setCompanyId($this->companyID);
+        $accountingCustomerParty->setCompanyId($this->customercompanyID);
         $accountingCustomerParty->setCompanySchemeID($this->customercompanySchemeID);
 
         $entry->setAccountingCustomerParty($accountingCustomerParty);
 
         /* paymentMeans Node */
         $paymentMeans = (new \CleverIt\UBL\Invoice\PaymentMeans())
-            ->setPaymentMeansCode($this->paymentMeansCode)
+            ->setPaymentMeansCode($this->paymentMeansCode, $this->paymentMeansCodeAttr)
             ->setPaymentDueDate($this->paymentMeansDueDate)
             ->setFinancialAccount((new \CleverIt\UBL\Invoice\PayeeFinancialAccount())
                 ->setSchema($this->paymentMeansFASchemaId, $this->paymentMeansFASchemaVal));
         $entry->setpaymentMeans($paymentMeans);
 
         /* Tax Node */
-//$entry->TaxCurrencyCode($this->taxCurrencyCode) ;
         $entry->TaxCurrencyCode((new \CleverIt\UBL\Invoice\CurrencyID())->currencyCode($this->taxCurrencyCode));
 
 
@@ -170,22 +225,26 @@ class BaseconeInvoice
         $taxtotal->setTaxAmount($this->taxTAmount);
 
         $entry->setTaxTotal($taxtotal);
-        /* Invoice Inline  Node */
+        /* Invoice crdtLine  Node */
 
 
-        $countInLineId = count($this->inLineId);
+        $countcrdtLineId = count($this->crdtLineId);
 
         $invoiceLine = array();
-        for ($k = 0; $k < $countInLineId; $k++) {
+        for ($k = 0; $k < $countcrdtLineId; $k++) {
 
             $invLineTaxtotal = (new \CleverIt\UBL\Invoice\TaxTotal());
             $invLineTaxtotal->setTaxAmount($this->taxAmount[$k]);
-            // $invLineTaxtotal->addTaxSubTotal( (new \CleverIt\UBL\Invoice\TaxSubTotal() )
-            //  ->setTaxAmount( $this->taxTAmount )
-            // ->setTaxableAmount( $this->taxTableAmount  )
-            //  );
-            $item = (new \CleverIt\UBL\Invoice\Item())->setName($this->inLineItemName[$k])
-                ->setDescription($this->inLineItemDesc[$k])
+            $invLineTaxtotal->addTaxSubTotal((new \CleverIt\UBL\Invoice\TaxSubTotal())
+                ->setTaxAmount($this->taxTAmount)
+                ->setTaxableAmount($this->taxTableAmount)
+                ->setTaxCategory((new \CleverIt\UBL\Invoice\TaxCategory())->setId($this->itemTaxCatID[$k], $this->itemTaxCatIdAttr[$k])
+                    ->setName($this->itemTaxCatName[$k])
+                    ->setPercent($this->itemTaxCatPercent[$k])
+                    ->setTaxScheme((new \CleverIt\UBL\Invoice\TaxScheme())->setId($this->itemTaxCatSchemeID[$k], $this->itemTaxCatSchemeIdAttr[$k]))
+                ));
+            $item = (new \CleverIt\UBL\Invoice\Item())->setName($this->crdtLineItemName[$k])
+                ->setDescription($this->crdtLineItemDesc[$k])
                 ->setTaxCategory((new \CleverIt\UBL\Invoice\TaxCategory())
                     ->setId($this->itemTaxCatID[$k], $this->itemTaxCatIdAttr[$k])
                     //  ->setId($this->itemTaxCatID[$k]  )
@@ -196,17 +255,17 @@ class BaseconeInvoice
                         ->setId($this->itemTaxCatSchemeID[$k], $this->itemTaxCatSchemeIdAttr[$k])
                     //->setSchemeId('jjjjj')
                     )
-                );
-               // ->setSellersItemIdentification($this->inLineSellerId[$k]);
+                )
+                ->setSellersItemIdentification($this->crdtLineSellerId[$k]);
 
             $price = (new \CleverIt\UBL\Invoice\Price())->setPriceAmount($this->priceAmount[$k])
                 ->setUnitCode($this->unitCode[$k])
                 ->setBaseQuantity($this->baseQuantity[$k]);
 
-            $invoiceLine[] = (new \CleverIt\UBL\Invoice\InvoiceLine())
-                ->setId($this->inLineId[$k])
-                ->setInvoicedQuantity($this->inLineQuantity[$k])
-                ->setLineExtensionAmount($this->inLineExtAmount[$k])
+            $invoiceLine[] = (new \CleverIt\UBL\Invoice\CreditLine())
+                ->setId($this->crdtLineId[$k])
+                ->setCreditedQuantity($this->crdtLineQuantity[$k], $this->crdtLineQuantityAttr[$k])
+                ->setLineExtensionAmount($this->crdtLineExtAmount[$k])
                 ->setTaxTotal($invLineTaxtotal)
                 ->setPrice($price)
                 ->setItem($item);
@@ -214,9 +273,9 @@ class BaseconeInvoice
 
             /*
                  $invoiceLine[]  = (new \CleverIt\UBL\Invoice\InvoiceLine())
-                ->setId($this->inLineId)
-                ->setInvoicedQuantity($this->inLineQuantity )
-                ->setLineExtensionAmount($this->inLineExtAmount)
+                ->setId($this->crdtLineId)
+                ->setInvoicedQuantity($this->crdtLineQuantity )
+                ->setLineExtensionAmount($this->crdtLineExtAmount)
                 ->setTaxTotal($invLineTaxtotal)
                 ->setPrice($price)
                 ->setItem($item); */
@@ -225,18 +284,17 @@ class BaseconeInvoice
 
 //$entry->setInvoiceLines([$invoiceLine]);
 
-        $entry->setInvoiceLines($invoiceLine);
+        $entry->setcreditLines($invoiceLine);
 //$entry->setInvoiceLines([$invoiceLine]);
 
 
-        echo '<pre>';
-        print_R($entry);
+        //  echo '<pre>';
+        //print_r($entry);
+
         /* LegalMonetaryTotal  Node */
         $entry->setLegalMonetaryTotal((new \CleverIt\UBL\Invoice\LegalMonetaryTotal())
             ->setLineExtensionAmount($this->LegalMonetaryExtAmount)
             ->setTaxExclusiveAmount($this->LegalMonetaryTaxExcAmount)
-            ->setTaxInclusiveAmount($this->LegalMonetaryTaxIncAmount)
-            ->setPrePaidAmount($this->LegalMonetaryPrePaidAmt)
             ->setPayableAmount($this->LegalMonetaryPayableAmt)
             ->setAllowanceTotalAmount($this->LegalMonetaryAllowanceTotalAmt));
 

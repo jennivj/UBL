@@ -1,10 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: bram.vaneijk
- * Date: 25-10-2016
- * Time: 12:29
- */
+ 
 
 namespace CleverIt\UBL\Invoice;
 
@@ -110,9 +105,7 @@ class Address implements XmlSerializable{
      * @return void
      */
     function xmlSerialize(Writer $writer) {
-        // TODO: Implement xmlSerialize() method.
-        $cbc = '{urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2}';
-        $cac = '{urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2}';
+      
 
         $writer->write([
             Schema::CBC.'StreetName' => $this->streetName,

@@ -1,9 +1,16 @@
 <?php
 require_once "../vendor/autoload.php";
-require_once "baseconeInvoiceClass.php";
+require_once "creditNoteClass.php";
+
 require_once "db-connection.php";
 
- $sqlDoc = "SELECT *  FROM `sysdocuments`   WHERE  TypeDoc ='INV' AND TotalHT>0  limit 0, 1";
+
+ 
+
+ //======================================================
+ 
+
+ $sqlDoc = "SELECT *  FROM `sysdocuments`   WHERE  TypeDoc ='INV' AND TotalHT<0  limit 0, 1";
 $resultDoc = $conn->query($sqlDoc);
 
 
@@ -11,10 +18,10 @@ if ($resultDoc->num_rows > 0) {
     // output data of each row
     while ($row = $resultDoc->fetch_assoc()) {
 
-       // if (  $row["TauxTVA"] >= 0) {
+        if ( $row["TauxTVA"] >= 0) {
 
 
-         echo   $sqlclient = " SELECT * FROM `sysclients`   WHERE RefClient=" . $row["RefClient"] . " ";
+            $sqlclient = " SELECT * FROM `sysclients`   WHERE RefClient=" . $row["RefClient"] . " ";
             $resultClient = $conn->query($sqlclient);
             while ($rowClient = $resultClient->fetch_assoc()) {
                 $cust_name = ($rowClient['NomClient'] != "") ? $rowClient['NomClient'] : $rowClient['Societe'];
@@ -26,22 +33,26 @@ if ($resultDoc->num_rows > 0) {
                 $resultList = $conn->query($sqlList);
 
                 $rowList = $resultList->fetch_assoc();
-                $currencyAttrAgencyID = (string)$rowList['RefListe'];
+                $currencyAttrAgencyID = $rowList['RefListe'];
                 $currencyAttrListID = 'ISO 4217 Alpha';  //ISO 4217 is the International std for currency codes
                 $countryCodeAttr = 'ISO3166-1';  //ISO 3166 is the Intl Standard for country codes and codes
                 $taxSchemeID = "UN/ECE 5153"; //Vat Tax Code ;  for Tax codes, such as "VAT".
-                $taxCatSchemeID = "UN/ECE 5305"; // Category Scheme ID
-                $currencyCode =  $row["Devise"]; // EUR
+                $taxCatSchemeID = "UN/ECE 5305";
+                $currencyCode = $row["Devise"]; // EUR
  
-                $binvoice = new BaseconeInvoice;
+                $binvoice = new creditNoteClass;;
                 $binvoice->customizationID = strtotime($row["DtEmis"]);
-                $binvoice->ID = $row['RefDoc'];
+                 $binvoice->ID = $row['RefDoc'];
+                $binvoice->ProfileID  = $row['RefDoc'];
                 $binvoice->issueDate = $row["DtEmis"];// '2018-07-03';
+                      $binvoice->note = $row["des"];// 'desc3';
+
+
                 $binvoice->currencyAttrListID = $currencyAttrListID; //ISO 4217 is the International Standard for currency codes
                 $binvoice->currencyAttrAgencyID = $currencyAttrAgencyID;
                 $binvoice->docCurrencyCode = $currencyCode;
-                $binvoice->invoiceStartDate = $row["DtEmis"];
-                $binvoice->invoiceEndDate = $row["DtEcheance"];
+             //   $binvoice->invoiceStartDate = $row["DtEmis"];
+              //  $binvoice->invoiceEndDate = $row["DtEcheance"];
                 /* Supplier Node */
                 /* iterating building number from address */
                 $address_str = $rowClient['Adresse'] . ' , ' . $rowClient['Adresse2'];
@@ -54,14 +65,13 @@ if ($resultDoc->num_rows > 0) {
                 $binvoice->supplierPartyStreetName = $rowClient['Adresse'];
                 $binvoice->supplierPartyBuildingNumber = $building_number;
                 $binvoice->supplierPartyZip = $rowClient['CP'];
+
                 $binvoice->companyID = $rowClient['TVA'];
                 $binvoice->companySchemeID = $rowClient['Pays'] . "VAT";
                 $binvoice->supplierPartyCountryCode = $rowClient['Pays'];
                 $binvoice->supplierPartyCountryCodeAttr = $countryCodeAttr;
                 $binvoice->taxSchemeID = "VAT";
-                $binvoice->taxSchemeAttrID = $rowClient['TVA'];
-
-               // $binvoice->legalEntity = "Test";
+                $binvoice->taxSchemeAttrID = $rowClient['TVA'];             
                 /* customer */
 
                 $binvoice->customerPartyName = $cust_name;
@@ -69,6 +79,7 @@ if ($resultDoc->num_rows > 0) {
                 $binvoice->customerPartyStreetName = $rowClient['Adresse'];
                 $binvoice->customerPartyBuildingNumber = $building_number;
                 $binvoice->customerPartyZip = $rowClient['CP'];
+
                 $binvoice->customercompanyID = $rowClient['TVA'];
                 $binvoice->customercompanySchemeID = $rowClient['Pays'] . "VAT";
                 $binvoice->customerPartyCountryCode = $rowClient['Pays'];
@@ -79,9 +90,29 @@ if ($resultDoc->num_rows > 0) {
                 $phoneNo = ( $rowClient['Phone'] !="")?$rowClient['Phone']:$rowClient['GSM'];
                 $binvoice->contactPhone = $phoneNo;
                 
+/* Billing Reference Node */
+
+$binvoice->InvoiceDocRefID = '456456';
+$binvoice->AdditionalDocRefID[] = '456456';
+$binvoice->AdditionalDoctType[] = ' credit note ';
+$binvoice->AdditionalDocAttachment[] = 'Testcase19 credit note with invoice ref';
+$binvoice->AdditionalDocMimeCode[] = 'mime/pdf';
+$binvoice->AdditionalDocBinaryObject[] = 'obj';
+$binvoice->AdditionalDoc[] = 'Testcase19 credit note with invoice ref';
+//-------------------
+
+$binvoice->AdditionalDocRefID[] = '456456';
+$binvoice->AdditionalDoctType[] = ' credit note ';
+$binvoice->AdditionalDocAttachment[] = 'Testcase19 credit note with invoice ref';
+$binvoice->AdditionalDocMimeCode[] = 'mime/pdf';
+$binvoice->AdditionalDocBinaryObject[] = 'obj';
+$binvoice->AdditionalDoc[] = 'Testcase19 credit note with invoice ref';
 
                 /* PaymentMeans Node */
                 $binvoice->paymentMeansCode = "1";
+                $binvoice->paymentMeansCodeAttr['listID'] = '6';
+                $binvoice->paymentMeansCodeAttr['listURI'] = 'UN/ECE 5305 listURI';
+                $binvoice->paymentMeansCodeAttr['listName'] = 'listName';
                 $binvoice->paymentMeansDueDate = $row["DtEcheance"];
                 $binvoice->paymentMeansFASchemaId = "";
                 $binvoice->paymentMeansFASchemaVal = "";
@@ -118,22 +149,22 @@ if ($resultDoc->num_rows > 0) {
             
  
                 if ($resultDtl->num_rows > 0) {
-                	$lineExtensionAmt = 0;
-                	$inLineExtAmount =0;
-                	$sumTauxTVA =0;
-                	$prePayableAmt =0;
                     for ($i = 0; $i < count($rowDtlArr); $i++) {
-                        $binvoice->inLineId[]       = $rowDtlArr[$i]['RefDetail'];
-                        $binvoice->inLineQuantity[] = $rowDtlArr[$i]['Quantite'];
-                        $binvoice->inLineExtAmount[]= $rowDtlArr[$i]['Reduc'];
-                        $binvoice->inLineItemName[] = $rowDtlArr[$i]['CodeArt'];
-                        $binvoice->inLineItemDesc[] = $conn->real_escape_string($rowDtlArr[$i]['Description']);                
+                        $binvoice->crdtLineId[]       = $rowDtlArr[$i]['RefDetail'];
+                        $binvoice->crdtLineQuantity[] = $rowDtlArr[$i]['Quantite'];
 
+                         $binvoice->crdtLineQuantityAttr[$i]['unitCodeListID'] = '68w' . $i;
+                         $binvoice->crdtLineQuantityAttr[$i]['unitCode'] = 'UN/ECE 530wwwww ' . $i;
+
+                        $binvoice->crdtLineExtAmount[]= $rowDtlArr[$i]['Reduc'];
+                        $binvoice->crdtLineItemName[] = $rowDtlArr[$i]['CodeArt'];
+                        $binvoice->crdtLineItemDesc[] = $conn->real_escape_string($rowDtlArr[$i]['Description']);                
+  //$binvoice->crdtLineSellerId[] = "N07" . $i;
 
                         /* Invoice Inline >item  Node */
-                        $in_percent = (isset($rowDtlArr[$i]['TauxTVA']) != "") ? $rowDtlArr[$i]['TauxTVA'] : 0;
-                        $taxCatName = "VAT"; //static val
-                        $binvoice->itemTaxCatID[] = "S"; // static val
+                        $in_percent = (isset($rowDtlArr['TauxTVA']) != "") ? $rowDtlArr['TauxTVA'] : 0;
+                        $taxCatName = "VAT";
+                        $binvoice->itemTaxCatID[] = "S";
                         $binvoice->itemTaxCatIdAttr[$i]['schemeAgencyID'] = $currencyAttrAgencyID;;
                         $binvoice->itemTaxCatIdAttr[$i]['schemeID'] =   $taxCatSchemeID;
 
@@ -146,24 +177,19 @@ if ($resultDoc->num_rows > 0) {
                         $binvoice->priceAmount[] = $rowDtlArr[$i]['PUAchat'];
 		                $binvoice->baseQuantity[] = $rowDtlArr[$i]['Quantite'];
 		                $binvoice->unitCode[] = "";
-		                /* Sum of each values*/
-		                $lineExtensionAmt +=  $rowDtlArr[$i]['PUAchat'];
-                        $inLineExtAmount +=  $rowDtlArr[$i]['Reduc'];
-		                $sumTauxTVA  +=  $rowDtlArr[$i]['TauxTVA'];
 
                     }
+                }
 
-                $binvoice->LegalMonetaryExtAmount = $lineExtensionAmt;
-                $binvoice->LegalMonetaryTaxExcAmount = $lineExtensionAmt -  $inLineExtAmount;
-                $binvoice->LegalMonetaryTaxIncAmount = $lineExtensionAmt + $sumTauxTVA;
-                $binvoice->LegalMonetaryPrePaidAmt = $prePayableAmt;           
-                $binvoice->LegalMonetaryPayableAmt = ( $lineExtensionAmt + $sumTauxTVA) - $prePayableAmt;
-                    // $binvoice->LegalMonetaryPayableAmt = 0;
-                    // $binvoice->LegalMonetaryAllowanceTotalAmt = 0;
-                }            
+
+                $binvoice->LegalMonetaryExtAmount = 68;
+                $binvoice->LegalMonetaryTaxExcAmount = 7;
+                $binvoice->LegalMonetaryPayableAmt = 678;
+                $binvoice->LegalMonetaryAllowanceTotalAmt = "576";
               
+
                 $binvoice->generateXml();
             }
-       // }
+        }
     }
 }
