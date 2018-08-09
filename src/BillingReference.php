@@ -129,13 +129,14 @@ class BillingReference implements XmlSerializable{
         $writer->write([
             Schema::CBC.'ID' =>   $this->AdditionalDocRefID,
             Schema::CBC.'DocumentType' =>   $this->AdditionalDoctType  ,             
-            Schema::CAC.'Attachment' =>  [
+           /* Schema::CAC.'Attachment' =>  [
                     'name' => Schema::CBC . 'EmbeddedDocumentBinaryObject',
                     'value' =>  $this->AdditionalDocBinaryObject,
                     'attributes' => [
                         'mimeCode' => $this->AdditionalDocMimeCode
                     ]
                 ],
+                */
            
         ]);
     }

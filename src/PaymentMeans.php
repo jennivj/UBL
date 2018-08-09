@@ -78,9 +78,16 @@ class PaymentMeans implements XmlSerializable {
 
                 ],
 		 
-			Schema::CBC.'PaymentDueDate' =>   $this->paymentDueDate,         
-            Schema::CAC.'PayeeFinancialAccount' => $this->paymentAccount, 
+			//Schema::CBC.'PaymentDueDate' =>   $this->paymentDueDate,         
+           // Schema::CAC.'PayeeFinancialAccount' => $this->paymentAccount, 
 
 		]);
+		if(	isset( $this->paymentDueDate) &&  $this->paymentDueDate !=""){ 
+			$writer->write([ Schema::CBC.'PaymentDueDate' =>   $this->paymentDueDate,  ]) ;
+
+		}
+		 if(	isset( $this->paymentAccount) &&  $this->paymentAccount !=""){
+		  $writer->write([  Schema::CAC.'PayeeFinancialAccount' => $this->paymentAccount,  ]) ;
+		}
 	}		 
 }

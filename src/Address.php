@@ -109,7 +109,16 @@ class Address implements XmlSerializable{
 
         $writer->write([
             Schema::CBC.'StreetName' => $this->streetName,
-            Schema::CBC.'BuildingNumber' => $this->buildingNumber,
+           
+        ]);
+if($this->buildingNumber !=""){
+          $writer->write([        
+            Schema::CBC.'BuildingNumber' => $this->buildingNumber,            
+        ]);
+
+}
+   
+          $writer->write([            
             Schema::CBC.'CityName' => $this->cityName,
             Schema::CBC.'PostalZone' => $this->postalZone,
             Schema::CAC.'Country' => $this->country,

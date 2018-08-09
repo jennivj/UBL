@@ -1,10 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: baselbers
- * Date: 26-10-2017
- * Time: 21:45
- */
+ 
 
 namespace CleverIt\UBL\Invoice;
 
@@ -29,6 +24,7 @@ class LegalEntity implements XmlSerializable {
 
 	public function setRegistrationName($registrationName) {
 		$this->registrationName = $registrationName;
+		return $this;
 	}
 
 	public function getCompanyId() {
@@ -37,6 +33,7 @@ class LegalEntity implements XmlSerializable {
 
 	public function setCompanyId($companyId) {
 		$this->companyId = $companyId;
+		return $this;
 	}
 
 	function xmlSerialize(Writer $writer) {

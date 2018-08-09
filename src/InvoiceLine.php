@@ -11,6 +11,7 @@ class InvoiceLine implements XmlSerializable {
     private $invoicedQuantity;
     private $lineExtensionAmount;
     private $unitCode ;
+    private $idAttr;
     /**
      * @var TaxTotal
      */
@@ -51,7 +52,9 @@ class InvoiceLine implements XmlSerializable {
      * @param mixed $invoicedQuantity
      * @return InvoiceLine
      */
-    public function setInvoicedQuantity($invoicedQuantity) {
+    public function setInvoicedQuantity($invoicedQuantity,$idAttr=false) {
+        
+       $this->idAttr = $idAttr;         
         $this->invoicedQuantity = $invoicedQuantity;
         return $this;
     }
@@ -143,14 +146,20 @@ class InvoiceLine implements XmlSerializable {
      * @return void
      */
     function xmlSerialize(Writer $writer) {
+
+          $attrArray= [];
+        if(isset($this->idAttr['unitCode'])){
+
+        $attrArray['unitCode']= $this->idAttr['unitCode'];
+        }
+    
         $writer->write([
             Schema::CBC . 'ID' => $this->id,
             [
                 'name' => Schema::CBC . 'InvoicedQuantity',
                 'value' => $this->invoicedQuantity,
-              /*  'attributes' => [
-                    'unitCode' => $this->unitCode
-                ]
+                  'attributes' => $attrArray,
+              /*   
                 */
             ],
             [
@@ -160,13 +169,25 @@ class InvoiceLine implements XmlSerializable {
                     'currencyID' => currencyID::$currencyID
                 ]
             ],
-            Schema::CAC . 'TaxTotal' => $this->taxTotal,
-            Schema::CAC . 'Item' => $this->item,
+       
+         
         
         ]);
 
-        echo '<pre>';
-        print_R( $this->price  );
+      if ($this->taxTotal !== null && $this->taxTotal !="" ) {
+          $writer->write(
+                [
+                       Schema::CAC . 'TaxTotal' => $this->taxTotal,
+                ]);
+      }
+
+         if ($this->item !== null && $this->item !="" ) {
+           $writer->write(
+                [
+                         Schema::CAC . 'Item' => $this->item,
+                ]);
+            }
+
 
     if ($this->price !== null) {
             $writer->write(

@@ -13,6 +13,7 @@ class CreditNote  implements XmlSerializable{
     public $CustomizationID;
     public $ProfileID;
     public $IssueDate;
+    public $DueDate;
     public $note;
     public $DocumentCurrencyCode;
     public static $currencyID;
@@ -168,6 +169,8 @@ public function taxTotal(){
              $cbc . 'ProfileID' =>  $this->ProfileID,
              $cbc . 'ID' => $this->ID,
              $cbc . 'IssueDate' =>$this->IssueDate,
+           //   $cbc . 'DueDate'=>$this->DueDate,
+              $cbc . 'CreditNoteTypeCode'=>$this->InvoiceTypeCode,
              $cbc . 'Note' =>$this->note,
               [
                'name' =>   $cbc  . 'DocumentCurrencyCode', 'value' => $this->DocumentCurrencyCode,
@@ -181,7 +184,7 @@ public function taxTotal(){
 /* BillingReference node write */
 
          $billingRef =  [ $cac .'BillingReference' =>[
-                 $cac.'InvoiceDocumentReference' => [  $cac.'ID' => $this->InvoiceDocRefID],                
+                 $cac.'InvoiceDocumentReference' => [  $cbc.'ID' => $this->InvoiceDocRefID],                
 
                ],
              ];
@@ -238,7 +241,7 @@ public function taxTotal(){
 
          foreach ($this->creditLines as $creditLine) {
             $writer->write([
-                    $cac . 'creditLine' => $creditLine
+                    $cac . 'CreditNoteLine' => $creditLine
             ]);
         }
       /*    */

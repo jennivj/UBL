@@ -86,10 +86,7 @@ class TaxCategory implements XmlSerializable {
             throw new \InvalidArgumentException('Missing taxcategory id');
         }
 
-        if ($this->name === null) {
-            throw new \InvalidArgumentException('Missing taxcategory name');
-        }
-
+      
         if ($this->percent === null) {
             throw new \InvalidArgumentException('Missing taxcategory percent');
         }
@@ -127,7 +124,8 @@ class TaxCategory implements XmlSerializable {
             $writer->write([ Schema::CBC.'Name' => $this->name]);
         }
  if($this->percent != null){
-            $writer->write([  Schema::CBC.'Percent' => $this->percent,]);
+    $formatted_percent = number_format($this->percent, 2); 
+            $writer->write([  Schema::CBC.'Percent' =>  $formatted_percent,]);
         }
 
         if($this->taxScheme != null){

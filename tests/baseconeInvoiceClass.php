@@ -5,6 +5,7 @@ class BaseconeInvoice
     public $customizationID;
     public $ID;
     public $issueDate;
+    public $InvoiceTypeCode;
     public $currencyAttrListID;
     public $currencyAttrAgencyID;
     public $docCurrencyCode;
@@ -24,6 +25,8 @@ class BaseconeInvoice
     public $companyID;
     public $companySchemeID;
     public $legalEntity;
+    public $leComId;
+    public $leRegName;
     /* paymentMeans Node */
     public $paymentMeansCode;
     public $paymentMeansDueDate;
@@ -45,6 +48,7 @@ class BaseconeInvoice
 
     public $inLineId = array();
     public $inLineQuantity = array();
+    public $inLineQuantityAttr = array();
     public $inLineExtAmount = array();
     public $inLineItemName = array();
     public $inLineItemDesc = array();
@@ -67,7 +71,12 @@ class BaseconeInvoice
     public $baseQuantity= array();
     public $unitCode= array();
 
-    public function generateXml()
+    public $legEntityCompanyID;
+    public $legEntityRegName;
+
+    public $customertaxSchemeAttrID = array();
+
+    public function generateXml($RefDoc)
     {
 
         $service = new Sabre\Xml\Service();
@@ -78,7 +87,8 @@ class BaseconeInvoice
         ];
 
         $entry = $this->invoiceGeneration();
-        file_put_contents("ubl_invoice.xml", $service->write('Invoice', $entry));
+        $fileName = 'ubl_invoice_'. $RefDoc .'.xml' ;
+        file_put_contents( $fileName , $service->write('Invoice', $entry));
 //return $this;
     }
 
@@ -89,6 +99,10 @@ class BaseconeInvoice
         $entry->CustomizationID = $this->customizationID;
         $entry->ID = $entry->setId($this->ID);
         $entry->IssueDate = $this->issueDate;
+          $entry->DueDate = $this->DueDate;
+        
+        $entry->InvoiceTypeCode = $this->InvoiceTypeCode;
+        
         $currencyAttrArray = ['listID' => $this->currencyAttrListID, 'listAgencyID' => $this->currencyAttrAgencyID];
         $entry->DocumentCurrencyCode($this->docCurrencyCode, $currencyAttrArray);
         $entry->InvoicePeriod($this->invoiceStartDate, $this->invoiceEndDate); // start and end date
@@ -107,13 +121,16 @@ class BaseconeInvoice
 
         $accountingSupplierParty->setPostalAddress($supplierAddress);
         $accountingSupplierParty->setTaxScheme((new \CleverIt\UBL\Invoice\TaxScheme())
-            ->setId($this->taxSchemeID)
+            ->setId($this->taxSchemeID ,$this->taxSchemeAttrID)
             ->setSchemeId($this->taxSchemeAttrID));
         $accountingSupplierParty->setCompanyId($this->companyID);
         $accountingSupplierParty->setCompanySchemeID($this->companySchemeID);
 
-        $accountingSupplierParty->setLegalEntity($this->legalEntity);
-        $accountingSupplierParty->setContact((new \CleverIt\UBL\Invoice\Contact())->setElectronicMail($this->contactEmail )->setTelephone( $this->contactPhone));
+        $accountingSupplierParty->setLegalEntity( 
+            (new \CleverIt\UBL\Invoice\LegalEntity())
+            ->setCompanyId($this->leComId)
+            ->setRegistrationName( $this->leRegName )  );
+        $accountingSupplierParty->setContact( (new \CleverIt\UBL\Invoice\Contact())->setElectronicMail($this->contactEmail )->setTelephone( $this->contactPhone));
         $entry->setAccountingSupplierParty($accountingSupplierParty);
 
 
@@ -131,11 +148,14 @@ class BaseconeInvoice
 
         $accountingCustomerParty->setPostalAddress($customerAddress);
         $accountingCustomerParty->setTaxScheme((new \CleverIt\UBL\Invoice\TaxScheme())
-            ->setId($this->customertaxSchemeID)
-            ->setSchemeId($this->customertaxSchemeAttrID));
-        $accountingCustomerParty->setCompanyId($this->companyID);
+            ->setId($this->customertaxSchemeID , $this->customertaxSchemeAttrID )
+            );
+        $accountingCustomerParty->setCompanyId($this->customercompanyID);
         $accountingCustomerParty->setCompanySchemeID($this->customercompanySchemeID);
-
+        $accountingCustomerParty->setLegalEntity( 
+            (new \CleverIt\UBL\Invoice\LegalEntity())
+            ->setCompanyId(  $this->legEntityCompanyID)
+            ->setRegistrationName( $this->legEntityRegName)  );
         $entry->setAccountingCustomerParty($accountingCustomerParty);
 
         /* paymentMeans Node */
@@ -185,7 +205,7 @@ class BaseconeInvoice
             // ->setTaxableAmount( $this->taxTableAmount  )
             //  );
             $item = (new \CleverIt\UBL\Invoice\Item())->setName($this->inLineItemName[$k])
-                ->setDescription($this->inLineItemDesc[$k])
+               // ->setDescription($this->inLineItemDesc[$k])
                 ->setTaxCategory((new \CleverIt\UBL\Invoice\TaxCategory())
                     ->setId($this->itemTaxCatID[$k], $this->itemTaxCatIdAttr[$k])
                     //  ->setId($this->itemTaxCatID[$k]  )
@@ -205,9 +225,9 @@ class BaseconeInvoice
 
             $invoiceLine[] = (new \CleverIt\UBL\Invoice\InvoiceLine())
                 ->setId($this->inLineId[$k])
-                ->setInvoicedQuantity($this->inLineQuantity[$k])
+                ->setInvoicedQuantity($this->inLineQuantity[$k] , $this->inLineQuantityAttr[$k] )
                 ->setLineExtensionAmount($this->inLineExtAmount[$k])
-                ->setTaxTotal($invLineTaxtotal)
+               // ->setTaxTotal($invLineTaxtotal)
                 ->setPrice($price)
                 ->setItem($item);
 
@@ -219,7 +239,9 @@ class BaseconeInvoice
                 ->setLineExtensionAmount($this->inLineExtAmount)
                 ->setTaxTotal($invLineTaxtotal)
                 ->setPrice($price)
-                ->setItem($item); */
+                ->setItem($item); 
+
+            */
         }
 
 

@@ -79,15 +79,16 @@ class Item implements XmlSerializable {
      * @return void
      */
     function xmlSerialize(Writer $writer) {
-         if(isset($this->name) &&  $this->name !=""){
+         if(isset($this->name)  ){
+           $itemName = ($this->name =="")?'NA':$this->name;
               $writer->write([           
-           Schema::CBC.'Name' => $this->name,        
+           Schema::CBC.'Name' =>    $itemName,        
         
         ]);
          }
            if(isset($this->description) &&  $this->description !=""){
               $writer->write([           
-             Schema::CBC.'Description' => $this->description,        
+             Schema::CBC.'AdditionalInformation' =>  $this->description,        
         
         ]);
          }        

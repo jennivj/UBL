@@ -12,6 +12,8 @@ class Invoice  implements XmlSerializable{
     public $ID;
     public $CustomizationID;
     public $IssueDate;
+    public $DueDate;
+    public $InvoiceTypeCode;
     public $DocumentCurrencyCode;
     public static $currencyID;
 
@@ -134,6 +136,12 @@ public function taxTotal(){
              $cbc . 'CustomizationID' => $this->CustomizationID,
              $cbc . 'ID' => $this->ID,
              $cbc . 'IssueDate' =>$this->IssueDate,
+             $cbc . 'DueDate'=>$this->DueDate,
+             $cbc . 'InvoiceTypeCode'=>$this->InvoiceTypeCode,
+
+             // $cbc . 'Note'=> 'Note',
+             //<cbc:DueDate>2000-01-01</cbc:DueDate>
+           
               [
                'name' =>   $cbc  . 'DocumentCurrencyCode', 'value' => $this->DocumentCurrencyCode,
              //  ['listID'=>  $this->currencyAttrListID ,  'listAgencyID' => $this->currencyAttrAgencyID ];

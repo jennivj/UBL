@@ -160,16 +160,22 @@ class Party implements XmlSerializable{
         ]);
 
    if($this->taxScheme){
+
+if( $this->companyId !=""){
+
+}
+ 
             $writer->write([
                 Schema::CAC.'PartyTaxScheme' => [
-              //  Schema::CBC.'CompanyID' => $this->companyId,
-                     [
+            
+                [
                'name' =>     Schema::CBC.'CompanyID', 'value' =>$this->companyId,
                'attributes' =>['schemeID'=> $this->companySchemeID]  ,
-               ],
+               ],  
                 Schema::CAC.'TaxScheme' =>  $this->taxScheme,
                 ],
             ]);
+            
         }
 	   /* if($this->taxScheme){
 		    $writer->write([
@@ -195,11 +201,20 @@ class Party implements XmlSerializable{
             ]);
         }
 
+ if($this->legalEntity){
+            $writer->write([
+                Schema::CAC.'PartyLegalEntity' => $this->legalEntity
+            ]);
+        }
+
         if($this->contact){
             $writer->write([
                 Schema::CAC.'Contact' => $this->contact
             ]);
         }
+//------------------
 
+         
+        //----------------------
     }
 }

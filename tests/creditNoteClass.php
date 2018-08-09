@@ -6,6 +6,7 @@ class creditNoteClass
     public $ProfileID;
     public $ID;
     public $issueDate;
+        public $DueDate;
     public $note;
     public $currencyAttrListID;
     public $currencyAttrAgencyID;
@@ -35,7 +36,8 @@ class creditNoteClass
     public $companyID;
     public $companySchemeID;
     public $legalEntity;
-
+    public $leComId;
+    public $leRegName;
     /* customer Node*/
     public $customerPartyName;
     public $customerPartyCityName;
@@ -48,6 +50,8 @@ class creditNoteClass
     public $customertaxSchemeAttrID;
     public $customercompanyID;
     public $customercompanySchemeID;
+    public $legEntityCompanyID;
+    public $legEntityRegName;
 #----------------------#
 
     /* paymentMeans Node */
@@ -77,6 +81,10 @@ class creditNoteClass
     public $crdtLineItemName = array();
     public $crdtLineItemDesc = array();
     public $crdtLineSellerId = array();
+
+    public $CLtaxTAmount= array();
+     public $CLtaxTableAmount = array();
+    
     /*  Invoice crdtLine  >item */
     public $itemTaxCatID;
     public $itemTaxCatIdAttr;
@@ -107,7 +115,7 @@ class creditNoteClass
         ];
 
         $entry = $this->creditNoteGeneration();
-        file_put_contents("ubl_creditnote.xml", $service->write('Invoice', $entry));
+        file_put_contents("ubl_creditnote.xml", $service->write('CreditNote', $entry));
 //return $this;
     }
 
@@ -120,7 +128,9 @@ class creditNoteClass
         $entry->CustomizationID = $this->customizationID;
         $entry->ProfileID = $this->ProfileID;
         $entry->ID = $entry->setId($this->ID);
+        $entry->InvoiceTypeCode =  $this->InvoiceTypeCode;;
         $entry->IssueDate = $this->issueDate;
+          $entry->DueDate = $this->DueDate;
         $entry->note = $this->note;
         $attrArrayCur = [];
         if (isset($this->currencyAttrListID)) {
@@ -144,7 +154,7 @@ class creditNoteClass
                                   'DocumentType' =>  $AdditionalDoctType[$k] ];
                */
         }
-        print_r($arryAdditionRef);
+ 
         $entry->setAdditionalInvoiceDocRef($arryAdditionRef);
 
         $entry->InvoicePeriod($this->invoiceStartDate, $this->invoiceEndDate); // start and end date
@@ -168,8 +178,10 @@ class creditNoteClass
         $accountingSupplierParty->setCompanyId($this->companyID);
         $accountingSupplierParty->setCompanySchemeID($this->companySchemeID);
 
-        $accountingSupplierParty->setLegalEntity($this->legalEntity);
-        $accountingSupplierParty->setContact((new \CleverIt\UBL\Invoice\Contact())->setElectronicMail("info@cleverit.nl")->setTelephone("31402939003"));
+        $accountingSupplierParty->setLegalEntity(  (new \CleverIt\UBL\Invoice\LegalEntity())
+            ->setCompanyId($this->leComId)
+            ->setRegistrationName( $this->leRegName ) );
+   $accountingSupplierParty->setContact( (new \CleverIt\UBL\Invoice\Contact())->setElectronicMail($this->contactEmail )->setTelephone( $this->contactPhone));
         $entry->setAccountingSupplierParty($accountingSupplierParty);
 
 
@@ -191,8 +203,12 @@ class creditNoteClass
             ->setSchemeId($this->customertaxSchemeAttrID));
         $accountingCustomerParty->setCompanyId($this->customercompanyID);
         $accountingCustomerParty->setCompanySchemeID($this->customercompanySchemeID);
-
+   $accountingCustomerParty->setLegalEntity( 
+            (new \CleverIt\UBL\Invoice\LegalEntity())
+            ->setCompanyId(  $this->legEntityCompanyID)
+            ->setRegistrationName( $this->legEntityRegName)  );
         $entry->setAccountingCustomerParty($accountingCustomerParty);
+     
 
         /* paymentMeans Node */
         $paymentMeans = (new \CleverIt\UBL\Invoice\PaymentMeans())
@@ -236,8 +252,8 @@ class creditNoteClass
             $invLineTaxtotal = (new \CleverIt\UBL\Invoice\TaxTotal());
             $invLineTaxtotal->setTaxAmount($this->taxAmount[$k]);
             $invLineTaxtotal->addTaxSubTotal((new \CleverIt\UBL\Invoice\TaxSubTotal())
-                ->setTaxAmount($this->taxTAmount)
-                ->setTaxableAmount($this->taxTableAmount)
+                ->setTaxAmount($this->CLtaxTAmount[$k])
+                ->setTaxableAmount($this->CLtaxTableAmount[$k])
                 ->setTaxCategory((new \CleverIt\UBL\Invoice\TaxCategory())->setId($this->itemTaxCatID[$k], $this->itemTaxCatIdAttr[$k])
                     ->setName($this->itemTaxCatName[$k])
                     ->setPercent($this->itemTaxCatPercent[$k])
